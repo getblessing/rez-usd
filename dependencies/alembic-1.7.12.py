@@ -1,14 +1,11 @@
 
 import os
 import sys
-import platform
 from rezutil import lib
-
-IS_WIN = platform.system() == "Windows"
 
 
 url_prefix = "https://github.com/alembic/alembic/archive"
-filename = "1.7.1.zip"
+filename = "1.7.12.zip"
 
 
 def build(source_path, build_path, install_path, targets):
@@ -22,17 +19,6 @@ def build(source_path, build_path, install_path, targets):
 
     # Unzip the source
     source_root = lib.open_archive(archive)
-
-    # Patch
-    if IS_WIN:
-        # Alembic doesn't link against HDF5 libraries on Windows
-        # whether or not USE_HDF5=ON or not.  There is a line to link
-        # against HDF5 on DARWIN so we hijack it to also link on WIN32.
-        lib.patch_file(
-            source_root + "/lib/Alembic/CMakeLists.txt",
-            [("ALEMBIC_SHARED_LIBS AND DARWIN",
-              "ALEMBIC_SHARED_LIBS AND DARWIN OR ALEMBIC_SHARED_LIBS AND WIN32")]
-        )
 
     # Build
     with lib.working_dir(build_path + "/_alembic"):

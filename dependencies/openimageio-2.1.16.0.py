@@ -5,7 +5,7 @@ from rezutil import lib
 
 
 url_prefix = "https://github.com/OpenImageIO/oiio/archive"
-filename = "Release-1.7.14.zip"
+filename = "Release-2.1.16.0.zip"
 
 
 def build(source_path, build_path, install_path, targets):
@@ -40,6 +40,11 @@ def build(source_path, build_path, install_path, targets):
             # This may lead to undefined symbol errors at build or runtime.
             # So, we explicitly specify the OpenEXR we want to use here.
             "-DOPENEXR_HOME=\"%s\"" % os.getenv("OPENEXR_ROOT", install_path),
+
+            # boost
+            "-DBoost_NO_BOOST_CMAKE=On",
+            "-DBoost_NO_SYSTEM_PATHS=True",
+            "-DBOOST_ROOT=\"%s\"" % os.getenv("BOOST_ROOT", install_path),
 
             "-DHDF5_ROOT=\"%s\"" % os.getenv("REZ_HDF5_ROOT", install_path),
             "-DOpenColorIO_ROOT=\"%s\"" % os.getenv("REZ_OPENCOLORIO_ROOT",

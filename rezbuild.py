@@ -1,6 +1,6 @@
 """
 This rez build script was based on:
-https://github.com/PixarAnimationStudios/USD/blob/v20.02/build_scripts/build_usd.py
+https://github.com/PixarAnimationStudios/USD/blob/v20.08/build_scripts/build_usd.py
 """
 import os
 import sys
@@ -15,7 +15,7 @@ IS_MAC = platform.system() == "Darwin"
 
 
 url_prefix = "https://github.com/PixarAnimationStudios/USD/archive"
-filename = "v20.02.zip"
+filename = "v20.08.zip"
 
 
 def shorten_variant_build_path(source_path):
@@ -52,7 +52,7 @@ def build(source_path, build_path, install_path, targets):
 
     # Download the source
     archive = os.path.join(build_path, filename)
-    if not os.path.isfile(archive):
+    if rebuild:
         url = "%s/%s" % (url_prefix, filename)
         lib.download(url, archive)
 
@@ -60,6 +60,13 @@ def build(source_path, build_path, install_path, targets):
     source_root = lib.open_archive(archive, cleanup=rebuild)
 
     # Patch
+    # Fix "openvdb\Types.h(36):
+    #   fatal error C1083: cannot open file: 'OpenEXR/half.h' ..."
+    lib.patch_file(
+        source_root + "/pxr/imaging/glf/CMakeLists.txt",
+        [("list(APPEND optionalIncludeDirs ${OPENVDB_INCLUDE_DIR})",
+          "list(APPEND optionalIncludeDirs ${OPENVDB_INCLUDE_DIR} ${OPENEXR_INCLUDE_DIR})")]
+    )
     # Fix finding usd tools exec on Windows
     lib.patch_file(
         source_root + "/pxr/usd/bin/usddiff/usddiff.py",
@@ -78,13 +85,16 @@ def build(source_path, build_path, install_path, targets):
             "-DTBB_USE_DEBUG_BUILD=" + "ON" if is_debug else "OFF",
 
             "-DPXR_ENABLE_PYTHON_SUPPORT=ON",
+            "-DPXR_USE_PYTHON_3=%s" % "ON" if PY3 else "OFF",
             "-DPYTHON_EXECUTABLE=\"%s\"" % py_info[0],
             "-DPYTHON_LIBRARY=\"%s\"" % py_info[1],
             "-DPYTHON_INCLUDE_DIR=\"%s\"" % py_info[2],
 
             "-DBUILD_SHARED_LIBS=ON",
             "-DPXR_BUILD_DOCUMENTATION=ON",
+            "-DPXR_BUILD_EXAMPLES=ON",
             "-DPXR_BUILD_TESTS=ON",
+            "-DPXR_BUILD_TUTORIALS=ON",
             "-DPXR_BUILD_USD_TOOLS=ON",
             "-DPXR_BUILD_USDVIEW=ON",
 
@@ -110,6 +120,11 @@ def build(source_path, build_path, install_path, targets):
             "-DPXR_BUILD_EMBREE_PLUGIN=OFF",
             "-DPXR_BUILD_PRMAN_PLUGIN=OFF",
             "-DPXR_BUILD_DRACO_PLUGIN=OFF",
+
+            # PXR_VALIDATE_GENERATED_CODE
+            # hgiMetal
+            # PXR_BUILD_GPU_SUPPORT
+            # PXR_ENABLE_METAL_SUPPORT
         ]
         if IS_WIN:
             # Increase the precompiled header buffer limit.
@@ -199,7 +214,19 @@ def __findExe_Win(name):
     cmd = __findExe(name)
     if cmd and os.access(cmd + '.cmd', os.X_OK):
         return cmd + '.cmd'
-    return cmd
+
+    # find_executable under Windows only returns *.EXE files (Python 3.7+)
+    # so we need to traverse PATH.
+    for path in os.environ['PATH'].split(os.pathsep):
+        base = os.path.join(path, name)
+        # We need to test for name.cmd first because on Windows, the USD
+        # executables are wrapped due to lack of N*IX style shebang support
+        # on Windows.
+        for ext in ['.cmd', '']:
+            cmd = base + ext
+            if os.access(cmd, os.X_OK):
+                return cmd
+    return None
 
 if isWindows:
     _findExe = __findExe_Win

@@ -11,11 +11,11 @@ IS_MAC = platform.system() == "Darwin"
 
 
 if IS_WIN:
-    url_prefix = "https://github.com/oneapi-src/oneTBB/releases/download/2017_U5"
-    filename = "tbb2017_20170226oss_win.zip"
+    url_prefix = "https://github.com/oneapi-src/oneTBB/releases/download/2017_U6"
+    filename = "tbb2017_20170412oss_win.zip"
 else:
     url_prefix = "https://github.com/oneapi-src/oneTBB/archive"
-    filename = "4.4.6.tar.gz"
+    filename = "2017_U6.tar.gz"
 
 
 def build(source_path, build_path, install_path, targets):

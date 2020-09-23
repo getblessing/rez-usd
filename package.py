@@ -1,7 +1,7 @@
 
 name = "usd"
 
-version = "20.02"
+version = "20.08"
 
 _data = {
     # Allzpark
@@ -12,12 +12,18 @@ _data = {
 requires = [
     "python",
     "PyOpenGL",
-    "PySide",
+    # PySide only
+    # Use Qt.py to select Qt python binding variants
+    "Qt.py",
+    "!PyQt5",
+    "!PyQt4",
 ]
 
 variants = [
     ["platform-*", "python-2.7", "release-1"],
+    ["platform-*", "python-3.7", "release-1"],
     ["platform-*", "python-2.7", "release-0"],
+    ["platform-*", "python-3.7", "release-0"],
 ]
 
 
@@ -31,8 +37,8 @@ build_requires = [
 ]
 dependencies = [
     "zlib-1.2.11",
-    "boost-1.65.1",
-    "tbb-2017.5",
+    "boost-1.70.0",
+    "tbb-2017.6",
     "glew-2.0.0",
     "libpng-1.6.29",
     "libjpeg_turbo-1.5.1",
@@ -41,12 +47,12 @@ dependencies = [
     "hdf5-1.10.0",
     "blosc-1.17.0",
     "openexr-2.2.0",
-    "opensubdiv-3.1.1",
+    "opensubdiv-3.4.3",
     "openvdb-6.1.0",
     "opencolorio-1.1.0",
-    "openimageio-1.7.14",
-    "alembic-1.7.1",
-    "materialx-1.36.0",
+    "openimageio-2.1.16.0",
+    "alembic-1.7.12",
+    "materialx-1.37.1",
 ]
 private_build_requires = [
     # "rez",  # for building boost

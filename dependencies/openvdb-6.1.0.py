@@ -37,6 +37,8 @@ def build(source_path, build_path, install_path, targets):
             "-DOPENVDB_BUILD_UNITTESTS=OFF",
 
             # boost
+            "-DBoost_NO_BOOST_CMAKE=On",
+            "-DBoost_NO_SYSTEM_PATHS=True",
             "-DBOOST_ROOT=\"%s\"" % os.getenv("BOOST_ROOT", install_path),
             # blosc
             "-DBLOSC_ROOT=\"%s\"" % os.getenv("BLOSC_ROOT", install_path),
